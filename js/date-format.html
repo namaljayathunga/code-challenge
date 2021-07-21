@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>CrossKnowledge - Code challenge</title>
+</head>
+<body>
+  <script>
+    // This will create elements for testing, DO NOT change this code
+    (() => {
+      const MS_PER_MINUTE = 60000
+      const NOW = new Date()
+      let minutes = [0, 1, 30, 60, 6 * 60, 23 * 60, 24 * 60]
+      let dates = []
+
+      minutes.forEach((i) => dates.push(new Date(NOW - i * MS_PER_MINUTE)))
+
+      dates.forEach((item) => {
+        let el = document.createElement("div")
+        el.innerHTML = "Started "
+
+        let dt = document.createElement('span')
+        dt.className = 'js-date-format'
+        dt.innerHTML = item.toISOString()
+        el.appendChild(dt)
+        document.body.appendChild(el)
+      })
+    })();
+
+    //start challenge
+    (() => {
+        const MS_PER_SECOND = 1000
+        const MS_PER_MINUT = MS_PER_SECOND * 60
+        const MS_PER_HOUR = MS_PER_MINUT * 60
+        const MS_PER_DAY = MS_PER_HOUR * 24
+        let timeElements = {}
+        //reading time elements and initializing ids
+        const elements = [...document.querySelectorAll('.js-date-format')]
+        elements.forEach((el, index) => {
+            let elId = 'time' + index
+            el.id = elId
+            let diff = new Date() - new Date(el.innerHTML)
+            //diff is being used to reduce converting time and process, but this will cause to show wrong past time if the user hibernate the machine as this would not keep counting while hibernated
+            timeElements[elId] = {'diff': diff, 'originalTime': el.innerHTML, 'newTime': 0}
+        })
+
+        //calculate time past
+        const timePast = function () {
+            Object.keys(timeElements).forEach((val) => {
+                let newDiff = timeElements[val]['diff'] + MS_PER_SECOND
+                timeElements[val]['diff'] = newDiff
+                let newTime
+                let timeUnit
+                let el = document.getElementById(val)
+                if (newDiff < MS_PER_MINUT) {
+                    newTime = Math.floor(newDiff / MS_PER_SECOND)
+                    timeUnit = 'second'
+                } else if (newDiff < MS_PER_HOUR) {
+                    newTime = Math.floor(newDiff / MS_PER_MINUT)
+                    timeUnit = 'minute'
+                } else if (newDiff < MS_PER_DAY) {
+                    newTime = Math.floor(newDiff / MS_PER_HOUR)
+                    timeUnit = 'hour'
+                } else {
+                    //print originatl date if past time grater than 24 hour
+                    el.innerHTML = timeElements[val]['originalTime']
+                    //remove element since it does not change any more
+                    delete timeElements[val]
+                    return true
+                }
+                //update the dom only if value has been changed
+                if (timeElements[val]['newTime'] === newTime)
+                    return true
+                timeElements[val]['newTime'] = newTime
+                el.innerHTML = `${newTime} ${timeUnit}${newTime === 1 ? "" : "s"} ago`
+            })
+        }
+
+        //start timer
+        setInterval(timePast, 1000)
+    })();
+
+  </script>
+</body>
+</html>
