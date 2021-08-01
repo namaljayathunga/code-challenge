@@ -1,6 +1,5 @@
 <?php
 
-require_once 'cache.php';
 
 class SimpleJsonRequest
 {
